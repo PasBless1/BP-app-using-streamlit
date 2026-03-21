@@ -2,6 +2,7 @@ import streamlit as st
 import pickle
 import numpy as np
 import pandas as pd
+from pathlib import Path
 
 # ─── Page Configuration ───────────────────────────────────────────────────────
 st.set_page_config(
@@ -50,9 +51,21 @@ st.markdown("""
 # ─── Load Model & Scaler ──────────────────────────────────────────────────────
 @st.cache_resource
 def load_artifacts():
-    with open("best_model.pkl", "rb") as f:
+    repo_root = Path(__file__).resolve().parent
+    model_path = repo_root / "best_model.pkl"
+    scaler_path = repo_root / "scaler.pkl"
+
+    if not model_path.exists() or not scaler_path.exists():
+        missing = []
+        if not model_path.exists():
+            missing.append(str(model_path))
+        if not scaler_path.exists():
+            missing.append(str(scaler_path))
+        raise FileNotFoundError("Missing artifact(s): " + ", ".join(missing))
+
+    with open(model_path, "rb") as f:
         model = pickle.load(f)
-    with open("scaler.pkl", "rb") as f:
+    with open(scaler_path, "rb") as f:
         scaler = pickle.load(f)
     return model, scaler
 
@@ -62,6 +75,12 @@ try:
 except FileNotFoundError as e:
     model_loaded = False
     st.error(f"❌ Could not load model/scaler: {e}. Ensure `best_model.pkl` and `scaler.pkl` are in the same directory.")
+except ModuleNotFoundError as e:
+    model_loaded = False
+    st.error(f"❌ Could not unpickle model/scaler due to missing package: {e}. Install scikit-learn in the active environment: `pip install scikit-learn`.")
+except Exception as e:
+    model_loaded = False
+    st.error(f"❌ Unexpected error loading artifacts: {e}")
 
 
 # ─── Sidebar ──────────────────────────────────────────────────────────────────
@@ -151,9 +170,19 @@ if predict_btn:
 
         # Predict
         prediction = model.predict(input_scaled)[0]
-        prob = model.predict_proba(input_scaled)[0]
-        risk_pct = prob[1] * 100
-        no_risk_pct = prob[0] * 100
+
+        try:
+            prob = model.predict_proba(input_scaled)[0]
+            if len(prob) > 1:
+                risk_pct = prob[1] * 100
+                no_risk_pct = prob[0] * 100
+            else:
+                risk_pct = 100.0 if prediction == 1 else 0.0
+                no_risk_pct = 0.0 if prediction == 1 else 100.0
+        except (AttributeError, ValueError):
+            # Some estimators don't support predict_proba
+            risk_pct = 100.0 if prediction == 1 else 0.0
+            no_risk_pct = 0.0 if prediction == 1 else 100.0
 
         # ── Result Display ────────────────────────────────────────────────
         st.subheader("📊 Prediction Result")
@@ -184,8 +213,9 @@ if predict_btn:
 
         # ── Risk Gauge Bar ────────────────────────────────────────────────
         st.markdown("**Risk Level Gauge**")
-        st.progress(int(risk_pct))
-        if risk_pct < 20:
+        risk_pct_clamped = max(0, min(100, int(round(risk_pct))))
+        st.progress(risk_pct_clamped)
+        if risk_pct_clamped < 20:
             st.caption("🟢 Low Risk Zone")
         elif risk_pct < 50:
             st.caption("🟡 Moderate Risk Zone")
@@ -214,3 +244,4 @@ It is not intended to replace professional medical diagnosis, advice, or treatme
 Always consult a qualified healthcare provider for clinical decisions.
 </p>
 """, unsafe_allow_html=True)
+```
