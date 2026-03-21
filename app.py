@@ -74,13 +74,15 @@ try:
     model_loaded = True
 except FileNotFoundError as e:
     model_loaded = False
-    st.error(f"❌ Could not load model/scaler: {e}. Ensure `best_model.pkl` and `scaler.pkl` are in the same directory.")
+    st.error("❌ Could not load model/scaler. Ensure `best_model.pkl` and "
+             "`scaler.pkl` are in the same directory.")
 except ModuleNotFoundError as e:
     model_loaded = False
-    st.error(f"❌ Could not unpickle model/scaler due to missing package: {e}. Install scikit-learn in the active environment: `pip install scikit-learn`.")
+    st.error("❌ Could not unpickle model/scaler due to missing package. "
+             "Install scikit-learn in the active environment.")
 except Exception as e:
     model_loaded = False
-    st.error(f"❌ Unexpected error loading artifacts: {e}")
+    st.error("❌ Unexpected error loading artifacts.")
 
 
 # ─── Sidebar ──────────────────────────────────────────────────────────────────
