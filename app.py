@@ -246,4 +246,3 @@ It is not intended to replace professional medical diagnosis, advice, or treatme
 Always consult a qualified healthcare provider for clinical decisions.
 </p>
 """, unsafe_allow_html=True)
-```
