@@ -193,7 +193,7 @@ if predict_btn:
             st.markdown(f"""
             <div class="risk-box-high">
                 <h3 style="color:#C0392B; margin:0">⚠️ HIGH RISK</h3>
-                <p style="margin:5px 0 0 0">This patient is at <strong>high risk</strong> of developing 
+                <p style="margin:5px 0 0 0; color: black;">This patient is at <strong>high risk</strong> of developing 
                 Coronary Heart Disease within the next 10 years.</p>
             </div>
             """, unsafe_allow_html=True)
@@ -201,7 +201,7 @@ if predict_btn:
             st.markdown(f"""
             <div class="risk-box-low">
                 <h3 style="color:#1E8449; margin:0">✅ LOW RISK</h3>
-                <p style="margin:5px 0 0 0">This patient is at <strong>low risk</strong> of developing 
+                <p style="margin:5px 0 0 0; color: black;">This patient is at <strong>low risk</strong> of developing 
                 Coronary Heart Disease within the next 10 years.</p>
             </div>
             """, unsafe_allow_html=True)
